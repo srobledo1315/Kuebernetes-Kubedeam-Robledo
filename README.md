@@ -4,13 +4,31 @@ Este repositorio contiene la solución completa y automatizada utilizando **Vagr
 
 ## Arquitectura de Infraestructura
 
-El entorno consta de 3 máquinas virtuales aprovisionadas automáticamente sobre VirtualBox:
+El entorno consta de 3 máquinas virtuales aprovisionadas automáticamente sobre VirtualBox con el sistema operativo base **Rocky Linux 9**.
 
-1. **Servidor Bastión (`bastion`)**: Actúa como servidor DHCP, DNS y punto de administración central con `kubectl`.
-2. **Nodo Master (`master`)**: Control Plane del clúster (2 CPUs, 2GB RAM).
-3. **Nodo Worker (`worker`)**: Nodo para cargas de trabajo (1 CPU, 2GB RAM).
+### 1. Servidor Bastión (`bastion`)
+- **CPU:** 1 Core
+- **Memoria RAM:** 1024 MB
+- **Redes:**
+  - Adaptador 1 (NAT): Acceso a Internet y reenvío de puertos SSH (`2222`).
+  - Adaptador 2 (Red Interna `lab_net`): IP Estática `192.168.10.10`.
+- **Rol:** Servidor DNS (BIND9), DHCPd y terminal de administración remota del clúster.
 
-La red interna (`lab_net`) asigna direcciones IP fijas mediante reservaciones DHCP en el Bastión, basadas en las direcciones MAC configuradas en Vagrant para los nodos Master y Worker.
+### 2. Nodo Master (`master`)
+- **CPU:** 2 Cores (Requisito mínimo estricto para el Control Plane)
+- **Memoria RAM:** 2048 MB
+- **Redes:**
+  - Adaptador 1 (NAT): Acceso a Internet.
+  - Adaptador 2 (Red Interna `lab_net`): IP `192.168.10.20` (Fijada por DHCP en base a su MAC `080027111120`).
+- **Rol:** Panel de control de Kubernetes (API Server, etcd, Scheduler, Controller Manager).
+
+### 3. Nodo Worker (`worker`)
+- **CPU:** 1 Core
+- **Memoria RAM:** 2048 MB
+- **Redes:**
+  - Adaptador 1 (NAT): Acceso a Internet.
+  - Adaptador 2 (Red Interna `lab_net`): IP `192.168.10.21` (Fijada por DHCP en base a su MAC `080027111121`).
+- **Rol:** Nodo de ejecución para las aplicaciones y balanceo de carga interno (`kube-proxy`).
 
 ---
 
