@@ -82,15 +82,36 @@ La infraestructura fue aprovisionada utilizando **Vagrant** y **Ansible**, sin r
 
 ![Resumen de Ejecución de Ansible (Play Recap)](imagenes/01_ansible_recap.png)
 
-### Instrucciones de Uso
+## Instrucciones de Acceso y Pruebas Manuales
 
-1. Clonar el repositorio.
-2. Ejecutar la creación y aprovisionamiento automático:
-   ```bash
-   vagrant up
-   ```
-3. Acceder al Bastión para administrar el clúster:
-   ```bash
-   vagrant ssh bastion
-   kubectl get nodes
-   ```
+Una vez desplegada la infraestructura con `vagrant up`, puedes acceder a cada una de las máquinas virtuales de forma independiente para realizar validaciones. 
+
+Abre una terminal en la carpeta de tu proyecto y utiliza los siguientes comandos:
+
+### 1. Acceso al Servidor Bastión (`bastion`)
+Es tu punto central de administración. Desde aquí ejecutas los comandos `kubectl` y validas el DNS/DHCP.
+```bash
+vagrant ssh bastion
+```
+**Pruebas que puedes ejecutar dentro del Bastión:**
+- Consultar el estado de los nodos de Kubernetes: `kubectl get nodes`
+- Listar todos los pods del sistema: `kubectl get pods -A`
+- Probar la resolución del DNS interno: `nslookup master.santiago.gomez.lab`
+
+### 2. Acceso al Nodo Master (`master`)
+Es el panel de control del clúster (Control Plane). Normalmente no se interactúa con él a menos que sea para mantenimiento.
+```bash
+vagrant ssh master
+```
+**Pruebas que puedes ejecutar dentro del Master:**
+- Verificar que el servicio principal del clúster está corriendo: `systemctl status kubelet`
+- Ver los contenedores base en ejecución: `sudo crictl ps`
+
+### 3. Acceso al Nodo Worker (`worker`)
+Es el nodo de carga de trabajo donde se despliegan los pods de las aplicaciones (ej. Nginx).
+```bash
+vagrant ssh worker
+```
+**Pruebas que puedes ejecutar dentro del Worker:**
+- Confirmar que obtuvo la IP estática reservada por DHCP: `ip a show eth1` *(debe ser 192.168.10.21)*
+- Confirmar la conectividad privada con el Master: `ping -c 4 192.168.10.20`
